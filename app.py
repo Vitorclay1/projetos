@@ -23,10 +23,51 @@ def get_tasks():
 
     output = {
         "tasks": task_list,
-        "total_tasks": 0
+        "total_tasks": len(task_list)
     }
 
     return jsonify(output)
+
+@app.route('/tasks/<int:task_id>', methods=['GET'])
+def get_task(task_id):
+
+    for t in tasks:
+        if t.id == task_id:
+            return jsonify(t.to_dict())
+    return jsonify({"message": "task not found"}), 404 
+
+@app.route('/tasks/<int:task_id>', methods=['PUT'])
+def update_task(task_id):
+    task = None
+    for t in tasks:
+        if t.id == task_id:
+            task = t
+            break
+    print(task)
+    if task == None:
+        return jsonify({"message": "Task not found"}), 404
+
+    data = request.get_json()
+    task.title = data['title']
+    task.description = data.get('description', '')
+    task.completed = data.get('completed', False)
+    print(task)
+
+    return jsonify({'message': 'Task updated successfully'})
+
+@app.route('/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    task = None
+    for t in tasks:
+        if t.id == task_id:
+            task = t
+            break
+    if not task:
+        return jsonify({"message": "Task not found"}), 404
+    
+    tasks.remove(task)
+    return jsonify({'message': 'Task deleted successfully'})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
